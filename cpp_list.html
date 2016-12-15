@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8";/>
+		<link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="css/cpp.css" rel="stylesheet" type="text/css" media="all" />
+		<title>Wonroot</title>
+	</head>
+	<body>
+		<div class="header">
+			<div class="logo">
+				<a href="index.html">
+					<img src="image/logo.png" />
+				</a>
+			</div>
+			<div class="menu">
+				<ul>
+					<li><a href="index.html">Home</a></li>
+
+					<li><a href="#">Project</a>
+						<ul>
+							<li><a href="#">C++</a></li>
+							<li><a href="#">数据库</a></li>
+							<li><a href="#">数据结构</a></li>
+						</ul>
+					</li>
+
+					<li><a href="#">About Me</a>
+						<ul>
+							<li><a href="#">Gtihub</a></li>
+							<li><a href="#">Codding</a></li>
+						</ul>
+					</li>
+
+				</ul>
+
+			</div>
+		</div>
+
+		<div class="header-bottom">
+			<a><span>数据结构课设一（单列表）</span></a>
+		</div>
+
+
+
+		<div class="text">
+			<div class="text-contain">
+				编写一算法,输出家谱</br>
+				
+			</div>
+
+			<div class="text-contain text-header">
+				<a><span>程序代码如下<span></a>
+			</div>
+			<pre>
+				<code>
+	
+			
+	
+	#include &lt;stdio.h>
+	#include &lt;stdlib.h>
+	#include &lt;string.h>
+	#define MAX 20
+	typedef struct SNODE
+	{
+	char name[MAX];      //人名
+	struct SNODE *left;     //指向配偶结点
+	struct SNODE *right;    //指向兄弟或子女结点
+	}FNODE;
+
+	//家谱建立函数
+	void InitialFamily(FNODE *&head)
+	{
+	FNODE *s,*r,*q;
+	int tag;
+	q=(FNODE *)malloc(sizeof(FNODE));
+	q=NULL;
+	s=(FNODE *)malloc(sizeof(FNODE));
+	printf("输入姓名:\n");
+	scanf("%s",s->name);
+	s->left=s->right=NULL;
+	head=r=s;
+	printf("%s是否有配偶?有 1,无 0\n",head->name);    //建立配偶结点
+	scanf("%d",&tag);
+	if(tag)
+	{
+	   s=(FNODE *)malloc(sizeof(FNODE));
+	   printf("输入其配偶姓名:\n");
+	   scanf("%s",s->name);
+	   s->left=s->right=NULL;
+        r->left=s;
+	   r=s;
+	   do{                                    //递归调用建立孩子结点
+		   printf("%s是否还有子女?有 1,无 0\n",head->name);
+		 scanf("%d",&tag);
+		   if(tag)
+			{ 
+			  InitialFamily(q);
+		 r->right=q;
+			  r=q;
+			}
+		}while(tag);
+	}
+}
+
+//家谱输出部分
+void PrintFamily(FNODE *head)
+{
+    FNODE *s;
+	if(head!=NULL)      
+	{
+		printf("%s",head->name);     //不为空时输出当前结点
+		if(head->left!=NULL)        //输出配偶结点
+		{
+            s=head->left;
+		  printf("和%s(",s->name);
+		PrintFamily(s->right);      //递归调用输出孩子结点
+		printf(")");
+		}
+		if(head->right!=NULL)      //递归调用输出兄弟结点
+		{
+            printf(",");
+		PrintFamily(head->right);
+		}
+	}
+}
+
+//结点定位函数
+FNODE *findnode(FNODE *b,char p[])      //在家谱中定位所要查找结点
+{
+	FNODE *q;
+	if(b==NULL)
+		return NULL;
+	else if(!strcmp(b->name,p))      //如果与查找人名相同则返回该结点
+		return b;
+	else 
+	{ 
+		q=findnode(b->left,p);         //否则递归调用其左结点
+		if(q!=NULL)
+			return q;
+		else return(findnode(b->right,p));  //递归调用右结点
+	}
+}
+//儿子查找函数
+void  FindSon(FNODE *b,char p[])          
+{
+	FNODE *q;
+	q=findnode(b,p);       
+	if(q!=NULL)                 //存在孩子结点时输出
+	{
+		q=q->left;
+		if(q==NULL||q->right==NULL)  //判断有无子女
+			printf("%s没有子女!\n",p);
+		else
+		{                          //输出则配偶结点的所有子女结点
+			q=q->right;
+		   printf("%s子女为：",p);
+		   while(q!=NULL)
+		   {
+			      printf("%s ",q->name);
+			      q=q->right;
+		   }
+	    	printf("\n");
+		}
+	}
+	else
+		printf("不存在你要查找的人!\n");
+}
+//祖先查找函数
+int  FindAncestor(FNODE *head,char son[])
+{
+	FNODE *p,*s;
+	FNODE *stack[MAX];
+	int tag[MAX];
+	int top=-1,i;
+	p=findnode(head,son);               //定位结点
+	if(p==NULL)                            
+	{	printf("不存在你要查找的人!\n");
+	     return 0;
+	}
+	s=head;
+	do{
+		while(s!=NULL)                //将其所有左结点进栈
+		{
+			top++;
+			stack[top]=s;
+			tag[top]=0;
+			s=s->left;
+		}
+		if(top>-1)
+		{
+			if(tag[top]==1)          //被访问过时
+			{
+				if(stack[top]==p)     //如果为所查找结点时输出祖先
+				{
+					printf("%s祖先为:\n",son);
+				   for(i=0;i<top;i++)
+				   {
+					   if(stack[i]->right==stack[i+1])  //将其兄弟结点删除,只保留父母结点
+						   i++;
+					   if(i<top)                         //依次输出夫妻结点
+						   printf("%s",stack[i]->name);
+					   i++;
+					   if(i<top)
+						   printf("和%s ",stack[i]->name);
+				   }
+				  break;
+				}
+			   top--;                    
+			}
+		   else                         //未访问过则访问其右结点并置访问标志
+		   {
+			   s=stack[top];
+			   if(top>0)
+			   {
+				  s=s->right;
+				  tag[top]=1;
+			   }
+		   }
+		}
+	}while(s!=NULL||top!=-1);
+	if(top==-1)
+	    printf("查找不到%s的祖先!\n",p);
+	else printf("\n");
+	return 1;
+}
+void PRINT(int &n)
+{   
+	do{
+		printf("请选择:\n");
+	    printf("1:建立家谱\n");
+	    printf("2:输出家谱\n");
+	    printf("3:查找某人所有儿子\n");
+        printf("4:查找某人所有的祖先\n");
+        printf("5:About writer\n");
+		scanf("%d",&n);
+	}while(n<0||n>5);
+}
+//主函数部分：调用选择界面函数，再依据用户的选择，调用相应函数，实现相关功能
+int main()
+{system("clear");
+   FNODE *head;
+	 int n=0;
+	 char name[MAX];
+	 head=NULL;
+	 do{
+		 PRINT(n);
+	     switch(n)
+		 { 
+		   case 1:  InitialFamily(head);break;
+	       case 2:  PrintFamily(head);printf("\n");break;
+	       case 3:  printf("请输入要查找的姓名:\n");
+			        scanf("%s",name);
+			        FindSon(head,name);
+					break;
+	       case 4:  printf("请输入要查找的姓名:\n");
+			        scanf("%s",name);
+			        n=FindAncestor(head,name);
+					printf("\n");
+					break;
+          case 5: printf("maked by owen\n");
+                     break;
+                
+		   default: break;
+		 }
+		 printf("是否继续?是 1，否 0\n");
+		 scanf("%d",&n);
+	 }while(n==1);
+}
+
+				</code>
+			</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<div class="bottom">
+			<div class="copyright">
+				<a>©2016 TAOROOT</a>
+				<p>本网站<span>（www.Wonroot.com）</span>刊载的所有内容，包括文字、图片、音频、视频、软件、程序、以及网页版式设计等均在网上搜集。<br/>
+				  访问者可将本网站提供的内容或服务用于个人学习、研究或欣赏，以及其他非商业性或非盈利性用途，但同时应遵守著作权法及其他相关法律的规定，不得侵犯本网站及相关权利人的合法权利。<br/>
+				  除此以外，将本网站任何内容或服务用于其他用途时，须征得本网站及相关权利人的书面许可，并支付报酬。<br/>
+				    本网站内容原作者如不愿意在本网站刊登内容，请及时通知本站，予以删除。
+				</p>
+			<div>
+		</div>
+
+	</body>
+</html>
+
+
+
+
+
+
+
+
